@@ -9,6 +9,7 @@ Config::Config()
     ,_modbusRtsPin(-1)
     ,_serialBaudRate(115200)
     ,_serialConfig(SERIAL_8N1)
+    ,_bridgeMode()
 {}
 
 void Config::begin(Preferences *prefs)
@@ -21,6 +22,7 @@ void Config::begin(Preferences *prefs)
     _modbusRtsPin = _prefs->getChar("modbusRtsPin", _modbusRtsPin);
     _serialBaudRate = _prefs->getULong("serialBaudRate", _serialBaudRate);
     _serialConfig = _prefs->getULong("serialConfig", _serialConfig);
+    _bridgeMode = _prefs->getUShort("bridgeMode", _bridgeMode);
 }
 
 uint16_t Config::getTcpPort(){
@@ -153,4 +155,14 @@ void Config::setSerialStopBits(uint8_t value){
     if (stopbits == value) return;
     _serialConfig = (_serialConfig & 0xffffffcf) | value;
     _prefs->putULong("serialConfig", _serialConfig);
+}
+
+uint16_t Config::getBridgeMode(){
+    return _bridgeMode;
+}
+
+void Config::setBridgeMode(uint16_t value) {
+    if (_bridgeMode == value) return;
+    _bridgeMode = value;
+    _prefs->putUShort("bridgeMode", _bridgeMode);
 }

@@ -16,6 +16,7 @@
             int8_t _modbusRtsPin;
             unsigned long _serialBaudRate;
             uint32_t _serialConfig;
+            uint16_t _bridgeMode;
         public:
             Config();
             void begin(Preferences *prefs);
@@ -43,6 +44,9 @@
             void setSerialParity(uint8_t value);
             uint8_t getSerialStopBits();
             void setSerialStopBits(uint8_t value);
+            uint16_t getBridgeMode();
+            void setBridgeMode(uint16_t value);
+
     };
     #ifdef DEBUG
     #define dbg(x...) debugSerial.print(x);
