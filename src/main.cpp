@@ -1,20 +1,18 @@
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <Logging.h>
-#include <ModbusBridgeWiFi.h>
-#include <ModbusClientRTU.h>
-#include <Preferences.h>
-#include <WiFiManager.h>
 #include <WiFi.h>
+#include <AsyncTCP.h>
+#include <WiFiManager.h>
+#include <ESPAsyncWebServer.h>
+#include <Preferences.h>
+#include <Logging.h>
 
 #include "config.h"
+#include "modbusmanager.h"
 #include "pages.h"
 
 AsyncWebServer webServer(80);
 Config config;
 Preferences prefs;
-ModbusBridgeWiFi MBbridge;
-ModbusClientRTU *MBclient;
+ModbusManager *modbusmanager;
 WiFiManager wm;
 
 void setup()
@@ -41,27 +39,10 @@ void setup()
   dbgln("[wifi] finished");
 
   dbgln("[modbus] start");
-  MBUlogLvl = LOG_LEVEL_WARNING;
-  RTUutils::prepareHardwareSerial(modbusSerial);
-  
-#if defined(RX_PIN) && defined(TX_PIN)
-  // use rx and tx-pins if defined in platformio.ini
-  modbusSerial.begin(config.getModbusBaudRate(), config.getModbusConfig(), RX_PIN, TX_PIN);
-  dbgln("Use user defined RX/TX pins");
-#else
-  // otherwise use default pins for hardware-serial2
-  modbusSerial.begin(config.getModbusBaudRate(), config.getModbusConfig());
-#endif
-
-  MBclient = new ModbusClientRTU(config.getModbusRtsPin());
-  MBclient->setTimeout(1000);
-  MBclient->begin(modbusSerial, 1);
-  for (uint8_t i = 1; i < 248; i++)
-  {
-    MBbridge.attachServer(i, i, ANY_FUNCTION_CODE, MBclient);
-  }
-  MBbridge.start(config.getTcpPort(), 10, config.getTcpTimeout());
+  modbusmanager->start(&config);
   dbgln("[modbus] finished");
+
+  dbgln("Start webserver");
   setupPages(&webServer, MBclient, &MBbridge, &config, &wm);
   webServer.begin();
   dbgln("[setup] finished");
